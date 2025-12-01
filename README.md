@@ -10,8 +10,11 @@ This template demonstrates the **correct** way to implement Dockview theming wit
 - ✅ **React 19.2** - Latest stable React
 - ✅ **TypeScript 5.9** - Full type safety
 - ✅ **Vite 7.2** - Lightning-fast HMR
+- ✅ **SQLite Database** - Pure Go (modernc.org/sqlite, no CGO)
 - ✅ **Dockview 4.11** - Advanced layout system with proper theming
 - ✅ **8 Built-in Themes** - Dark, Light, Visual Studio, Abyss, Dracula, Replit, and Spaced variants
+- ✅ **Theme Persistence** - Remembers your theme choice
+- ✅ **Layout Save/Load** - Save and restore panel arrangements
 - ✅ **Theme Hot-Switching** - Change themes at runtime
 - ✅ **Dynamic Panel Management** - Add/remove panels on the fly
 - ✅ **Automatic Theme Inheritance** - New panels automatically match current theme
@@ -26,6 +29,7 @@ This template demonstrates the **correct** way to implement Dockview theming wit
 | Vite | 7.2.4 |
 | Dockview | 4.11.0 |
 | Dockview React | 4.11.0 |
+| SQLite (modernc.org/sqlite) | 1.40.1 |
 | @vitejs/plugin-react | 5.1.1 |
 
 ## 🚀 Quick Start
@@ -92,6 +96,7 @@ import { themeDark, themeLight, themeAbyss } from "dockview-react";
 ## 📚 Documentation
 
 - [THEMING.md](./THEMING.md) - Complete theming guide
+- [DATABASE.md](./DATABASE.md) - SQLite integration and API reference
 - [LESSONS_LEARNED.md](./LESSONS_LEARNED.md) - Common mistakes and how to avoid them
 
 ## 🏗️ Project Structure
@@ -131,10 +136,13 @@ V2_byteframes/
 
 1. **Start the app**: `wails dev`
 2. **Test theme switching**: Click "🎨 Theme" button and try all 8 themes
-3. **Test dynamic panels**: Click "➕ Add Panel" to add new panels
-4. **Verify theme inheritance**: Add panels while on different themes
+3. **Test theme persistence**: Change theme, restart app, verify theme is remembered
+4. **Test layout save**: Arrange panels, click "💾 Save", enter name
+5. **Test layout load**: Click "📂 Load", select saved layout
+6. **Test dynamic panels**: Click "➕ Add Panel" to add new panels
+7. **Verify theme inheritance**: Add panels while on different themes
 
-All themes should apply instantly to all panels, including newly created ones.
+All themes should apply instantly to all panels, including newly created ones. Theme choice and active layout persist across app restarts.
 
 ## ❌ Common Mistakes to Avoid
 
