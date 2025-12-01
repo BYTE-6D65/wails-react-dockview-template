@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"V2_byteframes/models"
@@ -58,7 +59,7 @@ func (d *Database) GetAllSettings() ([]models.Setting, error) {
 
 // --- Layout Queries ---
 
-// SaveLayout creates or updates a layout
+// SaveLayout creates a new layout (returns error if name already exists)
 func (d *Database) SaveLayout(name, layoutJSON string) (*models.Layout, error) {
 	// Check if layout with this name exists
 	var existingID int
@@ -84,17 +85,8 @@ func (d *Database) SaveLayout(name, layoutJSON string) (*models.Layout, error) {
 		return nil, err
 	}
 
-	// Update existing layout
-	_, err = d.DB.Exec(`
-		UPDATE layouts
-		SET layout_json = ?, updated_at = CURRENT_TIMESTAMP
-		WHERE id = ?
-	`, layoutJSON, existingID)
-	if err != nil {
-		return nil, err
-	}
-
-	return d.GetLayout(existingID)
+	// Layout with this name already exists - return error
+	return nil, fmt.Errorf("%s already exists, provide a unique layout name", name)
 }
 
 // GetLayout retrieves a layout by ID

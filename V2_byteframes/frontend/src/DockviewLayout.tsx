@@ -75,23 +75,33 @@ export const DockviewLayout: React.FC = () => {
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [layoutName, setLayoutName] = useState("");
   const [savedLayouts, setSavedLayouts] = useState<Layout[]>([]);
+  const [saveError, setSaveError] = useState<string>("");
 
   // Load saved theme on mount
   useEffect(() => {
-    GetSetting("theme").then((savedTheme) => {
-      if (savedTheme) {
-        const theme = themes.find((t) => t.theme.name === savedTheme);
-        if (theme) {
-          setCurrentTheme(theme.theme);
+    GetSetting("theme")
+      .then((savedTheme) => {
+        console.log("Loaded theme from DB:", savedTheme);
+        if (savedTheme) {
+          const theme = themes.find((t) => t.theme.name === savedTheme);
+          if (theme) {
+            console.log("Applying saved theme:", theme.name);
+            setCurrentTheme(theme.theme);
+          }
         }
-      }
-    });
+      })
+      .catch((err) => {
+        console.error("Failed to load theme:", err);
+      });
   }, []);
 
   // Save theme when it changes
   useEffect(() => {
     if (currentTheme) {
-      SetSetting("theme", currentTheme.name);
+      console.log("Saving theme to DB:", currentTheme.name);
+      SetSetting("theme", currentTheme.name).catch((err) => {
+        console.error("Failed to save theme:", err);
+      });
     }
   }, [currentTheme]);
 
@@ -104,6 +114,20 @@ export const DockviewLayout: React.FC = () => {
       if (activeLayout && activeLayout.layout_json) {
         const layoutData = JSON.parse(activeLayout.layout_json);
         event.api.fromJSON(layoutData);
+
+        // Update panel counter based on loaded panels
+        const panelIds = event.api.panels.map((p) => p.id);
+        const maxCounter = panelIds
+          .filter((id) => id.startsWith("panel_"))
+          .map((id) => parseInt(id.split("_")[1]))
+          .filter((n) => !isNaN(n))
+          .reduce((max, n) => Math.max(max, n), 0);
+        setPanelCounter(maxCounter + 1);
+        console.log(
+          "Active layout loaded, next panel counter:",
+          maxCounter + 1,
+        );
+
         return;
       }
     } catch (err) {
@@ -115,19 +139,31 @@ export const DockviewLayout: React.FC = () => {
   };
 
   const addNewPanel = () => {
-    if (!api) return;
+    if (!api) {
+      console.error("Cannot add panel: API not ready");
+      return;
+    }
 
     const newPanelId = `panel_${panelCounter}`;
-    api.addPanel({
-      id: newPanelId,
-      component: "default",
-      title: `Panel ${panelCounter}`,
-    });
-    setPanelCounter(panelCounter + 1);
+    console.log("Adding panel:", newPanelId);
+
+    try {
+      api.addPanel({
+        id: newPanelId,
+        component: "default",
+        title: `Panel ${panelCounter}`,
+      });
+      setPanelCounter(panelCounter + 1);
+      console.log("Panel added successfully");
+    } catch (err) {
+      console.error("Failed to add panel:", err);
+    }
   };
 
   const handleSaveLayout = async () => {
     if (!api || !layoutName.trim()) return;
+
+    setSaveError(""); // Clear previous errors
 
     try {
       const layoutData = api.toJSON();
@@ -136,8 +172,9 @@ export const DockviewLayout: React.FC = () => {
       setShowSaveModal(false);
       setLayoutName("");
       console.log("Layout saved:", layoutName);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save layout:", err);
+      setSaveError(err.message || "Failed to save layout");
     }
   };
 
@@ -158,8 +195,23 @@ export const DockviewLayout: React.FC = () => {
       const layoutData = JSON.parse(layout.layout_json);
       api.fromJSON(layoutData);
       await SetActiveLayout(layout.id);
+
+      // Update panel counter based on loaded panels
+      const panelIds = api.panels.map((p) => p.id);
+      const maxCounter = panelIds
+        .filter((id) => id.startsWith("panel_"))
+        .map((id) => parseInt(id.split("_")[1]))
+        .filter((n) => !isNaN(n))
+        .reduce((max, n) => Math.max(max, n), 0);
+      setPanelCounter(maxCounter + 1);
+
       setShowLoadModal(false);
-      console.log("Layout loaded:", layout.name);
+      console.log(
+        "Layout loaded:",
+        layout.name,
+        "Next panel counter:",
+        maxCounter + 1,
+      );
     } catch (err) {
       console.error("Failed to load layout:", err);
     }
@@ -191,7 +243,10 @@ export const DockviewLayout: React.FC = () => {
           📂 Load
         </button>
         <button
-          onClick={() => setShowSaveModal(true)}
+          onClick={() => {
+            setShowSaveModal(true);
+            setSaveError(""); // Clear error when opening modal
+          }}
           style={{
             background: "#17a2b8",
             color: "white",
@@ -301,7 +356,10 @@ export const DockviewLayout: React.FC = () => {
             <input
               type="text"
               value={layoutName}
-              onChange={(e) => setLayoutName(e.target.value)}
+              onChange={(e) => {
+                setLayoutName(e.target.value);
+                setSaveError(""); // Clear error when typing
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSaveLayout();
                 if (e.key === "Escape") setShowSaveModal(false);
@@ -312,13 +370,24 @@ export const DockviewLayout: React.FC = () => {
                 width: "100%",
                 padding: "10px",
                 background: "#252526",
-                border: "1px solid #333",
+                border: saveError ? "1px solid #dc3545" : "1px solid #333",
                 borderRadius: "4px",
                 color: "white",
                 fontSize: "14px",
-                marginBottom: "16px",
+                marginBottom: saveError ? "8px" : "16px",
               }}
             />
+            {saveError && (
+              <div
+                style={{
+                  color: "#dc3545",
+                  fontSize: "13px",
+                  marginBottom: "16px",
+                }}
+              >
+                {saveError}
+              </div>
+            )}
             <div
               style={{
                 display: "flex",
