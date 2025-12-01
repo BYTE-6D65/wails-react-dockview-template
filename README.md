@@ -32,6 +32,9 @@ This template demonstrates the **correct** way to implement Dockview theming wit
 | SQLite (modernc.org/sqlite) | 1.40.1 |
 | @vitejs/plugin-react | 5.1.1 |
 
+<img width="2560" height="1440" alt="image" src="https://github.com/user-attachments/assets/9b6aab69-68a3-4d58-9205-6113afa08c6d" />
+
+
 ## 🚀 Quick Start
 
 ### Prerequisites
