@@ -1,0 +1,10 @@
+.bf-panel {
+    height: 100%;
+    overflow: auto;
+    color: var(--dv-activegroup-visiblepanel-tab-color);
+    background-color: var(--dv-group-view-background-color);
+}
+
+.bf-panel-content {
+    padding: 20px;
+}
