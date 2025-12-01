@@ -174,7 +174,10 @@ export const DockviewLayout: React.FC = () => {
       console.log("Layout saved:", layoutName);
     } catch (err: any) {
       console.error("Failed to save layout:", err);
-      setSaveError(err.message || "Failed to save layout");
+      // Extract error message from Wails error format
+      const errorMessage =
+        err?.message || err?.toString() || "Failed to save layout";
+      setSaveError(errorMessage);
     }
   };
 
